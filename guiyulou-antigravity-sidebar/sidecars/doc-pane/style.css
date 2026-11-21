@@ -1,0 +1,235 @@
+/* 文献面板的样式。颜色全部沿用应用推进来的主题变量，间距按 8 像素、圆角 10/8/6 三级、字号 13/12/11 三级。 */
+:root {
+  --dp-fg: var(--foreground, #333); --dp-bg: var(--background, #fafafa); --dp-muted: var(--muted-foreground, #7a7a7a);
+  --dp-cardbg: var(--card, #fff); --dp-line: color-mix(in srgb, var(--border, #ccc) 75%, transparent);
+  --dp-accent: var(--primary, #cb4b16); --dp-accent-fg: var(--primary-foreground, #fff);
+  --dp-tint: color-mix(in srgb, var(--primary, #cb4b16) 12%, transparent); --dp-hover: color-mix(in srgb, var(--foreground, #333) 7%, transparent);
+  --dp-shadow: 0 4px 18px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.06);
+  --dp-scroll: color-mix(in srgb, var(--foreground, #333) 28%, transparent);   /* 分屏时自己画的滚动条滑块的颜色 */
+}
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; font: 13px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; background: var(--dp-bg); color: var(--dp-fg); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* 通用小部件：图标钮、胶囊钮、分段开关、卡片 */
+.icon { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--dp-muted); position: relative; }
+.icon:hover { background: var(--dp-hover); color: var(--dp-fg); }
+.icon.on { color: var(--dp-fg); }
+.icon.small { width: 22px; height: 22px; border-radius: 6px; font-size: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 13px; font-size: 12px; border: 1px solid var(--dp-line); background: var(--dp-cardbg); }
+.pill:hover { background: var(--dp-hover); }
+.pill.primary { background: var(--dp-accent); color: var(--dp-accent-fg); border-color: transparent; }
+.pill.primary:hover { filter: brightness(1.08); }
+.pill.ghost { border-color: transparent; background: transparent; color: var(--dp-muted); }
+.pill.ghost:hover { background: var(--dp-hover); color: var(--dp-fg); }
+.pill svg { width: 13px; height: 13px; }
+.seg { display: inline-flex; height: 26px; padding: 2px; border-radius: 13px; background: var(--dp-hover); }
+.seg button { height: 22px; padding: 0 10px; border-radius: 11px; font-size: 12px; color: var(--dp-muted); }
+.seg button.on { background: var(--dp-cardbg); color: var(--dp-fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.card { background: var(--dp-cardbg); border: 1px solid var(--dp-line); border-radius: 12px; box-shadow: var(--dp-shadow); }
+
+/* 顶栏 */
+#bar { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 8px; border-bottom: 1px solid var(--dp-line); flex: none; }
+/* 选项卡条：所有打开文件的一条总清单。当前栏正显示的带底色；分屏时另一栏正显示的带一道浅底线；未保存的名字后带点；名字太长省略 */
+#tabs { flex: 1; min-width: 0; display: flex; align-items: center; gap: 2px; overflow: hidden; }
+#tabs .tab.shown { box-shadow: inset 0 -2px var(--dp-line); }
+#tabs .tab.dragging { opacity: .4; }
+/* 拖选项卡时显示区上的落点提示：盖住要进入的那一栏（没分屏时是左半或右半） */
+#dropHint { position: absolute; top: 0; bottom: 0; display: none; background: var(--dp-tint); border: 2px dashed var(--dp-accent); border-radius: 8px; box-sizing: border-box; pointer-events: none; z-index: 5; }
+#tabs .empty { color: var(--dp-muted); font-size: 12px; padding-left: 4px; white-space: nowrap; }
+#tabs .tab { display: inline-flex; align-items: center; gap: 2px; height: 26px; padding: 0 4px 0 10px; border-radius: 8px; font-size: 12px; color: var(--dp-muted); max-width: 180px; min-width: 48px; flex: 0 1 auto; cursor: pointer; }
+#tabs .tab:hover { background: var(--dp-hover); color: var(--dp-fg); }
+#tabs .tab.on { background: var(--dp-cardbg); color: var(--dp-fg); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+#tabs .tab .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#tabs .tab.dirty .nm::after { content: ' •'; color: var(--dp-accent); }
+#tabs .tab .x { width: 16px; height: 16px; border-radius: 4px; font-size: 13px; line-height: 16px; color: var(--dp-muted); opacity: 0; flex: none; }
+#tabs .tab:hover .x, #tabs .tab.on .x { opacity: 1; }
+#tabs .tab .x:hover { background: var(--dp-hover); color: var(--dp-fg); }
+#actions { display: flex; align-items: center; gap: 6px; flex: none; }
+#zoom button { padding: 0 7px; min-width: 22px; }
+#zoom #zoomReset { min-width: 40px; color: var(--dp-fg); font-variant-numeric: tabular-nums; }
+.badge { position: absolute; top: -3px; right: -4px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--dp-accent); color: var(--dp-accent-fg); font-size: 9px; line-height: 14px; text-align: center; box-shadow: 0 0 0 2px var(--dp-bg); }
+#notesBtn.has { color: var(--dp-fg); }
+.badge.zero { display: none; }
+
+/* 主区：左栏、拖宽条、显示区 */
+#main { flex: 1; display: flex; min-height: 0; position: relative; }
+#side { width: 232px; flex: none; display: flex; flex-direction: column; border-right: 1px solid var(--dp-line); min-height: 0; }
+#side.hidden, #resizer.hidden { display: none; }
+#resizer { width: 5px; margin-left: -5px; flex: none; cursor: col-resize; z-index: 1; }
+#resizer:hover, #resizer.on { background: var(--dp-tint); }
+#searchbox { display: flex; align-items: center; gap: 6px; margin: 8px; padding: 0 6px 0 8px; height: 28px; border-radius: 8px; background: var(--dp-hover); color: var(--dp-muted); }
+#searchbox:focus-within { background: var(--dp-cardbg); box-shadow: 0 0 0 1px var(--dp-line); }
+#searchbox input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--dp-fg); font: inherit; font-size: 12px; outline: none; }
+#searchbox svg { width: 13px; height: 13px; }
+#searchClear { display: none; }
+#searchbox.has #searchClear { display: inline-flex; }
+#tree { flex: 1; overflow: auto; padding: 0 8px 8px; }
+.node { display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 6px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; color: var(--dp-fg); }
+.node:hover { background: var(--dp-hover); }
+.node .tw { width: 10px; flex: none; color: var(--dp-muted); font-size: 9px; transition: transform .15s; }
+.node.open .tw { transform: rotate(90deg); }
+.node svg { width: 13px; height: 13px; color: var(--dp-muted); }
+.node .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.node.file.on { background: var(--dp-tint); box-shadow: inset 2px 0 0 var(--dp-accent); }
+.node.file.on svg { color: var(--dp-accent); }
+.children { padding-left: 12px; }
+.node.hit { height: auto; padding: 4px 6px; white-space: normal; align-items: flex-start; }
+.node.hit svg { margin-top: 2px; }
+.node.hit .nm { white-space: normal; word-break: break-all; }
+.node .sub { display: block; font-size: 11px; color: var(--dp-muted); }
+#tree .hint, .view .hint { padding: 12px; color: var(--dp-muted); font-size: 12px; }
+
+/* 显示区：阅读态、图片、PDF、编辑器 */
+/* 两栏：右栏只在分屏时显示，中间是拖动条。每栏里显示区容器 .views 装着各选项卡的 .view，只显示当前那块（on），其余留在页面里不显示，内容原样保留 */
+#panes { flex: 1; min-width: 0; display: flex; position: relative; }
+.pane { flex: 1; min-width: 0; display: none; flex-direction: column; position: relative; }
+#paneA, body.split #paneB { display: flex; }
+#paneDivider { display: none; width: 5px; flex: none; cursor: col-resize; background: var(--dp-line); }
+body.split #paneDivider { display: block; }
+#paneDivider:hover { background: var(--dp-accent); }
+body.split .pane.focus { box-shadow: inset 0 2px var(--dp-accent); }   /* 分屏时当前栏顶部一道线 */
+/* 分屏时两栏自己的竖向滚动条都不显示，显示区最右侧只留一条（#paneScroll）：脚本按当前栏的滚动位置摆里面的滑块，拖它滚的也是当前栏。
+   右边留出 12 像素给它，不压住右栏的内容。各栏横向的滚动条仍然留着，画成一条细的 */
+body.split #panes { padding-right: 12px; }
+#paneScroll { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 12px; z-index: 4; }
+body.split #paneScroll { display: block; }
+#paneScroll div { position: absolute; left: 2px; width: 8px; border-radius: 4px; background: var(--dp-scroll); }
+#paneScroll:hover div, #paneScroll.on div { background: color-mix(in srgb, var(--foreground, #333) 50%, transparent); }
+body.split .view::-webkit-scrollbar { width: 0; height: 8px; }
+body.split .view::-webkit-scrollbar-thumb { background: var(--dp-scroll); border-radius: 4px; }
+.views { flex: 1; min-height: 0; min-width: 0; position: relative; display: flex; }
+.view { flex: 1; min-width: 0; overflow: auto; position: relative; display: none; }
+.view.on { display: block; }
+.view.md { padding: 16px 20px 40px; line-height: 1.65; font-size: calc(13px * var(--dp-zoom, 1)); }
+.view.md .mdbody { max-width: 48em; margin: 0 auto; }
+/* 面板够宽（最大化后）：正文块放宽到 62 个字、字号略大、行距略松，仍居中，两边留白 */
+body.wide .view.md { padding: 28px 48px 48px; font-size: calc(14px * var(--dp-zoom, 1)); line-height: 1.75; }
+body.wide .view.md .mdbody { max-width: 62em; }
+body.wide .view.img { text-align: center; }
+.view.md h1 { font-size: 1.5em; } .view.md h2 { font-size: 1.25em; } .view.md h3 { font-size: 1.1em; }
+.view.md pre { overflow-x: auto; padding: 10px 12px; background: var(--dp-hover); border-radius: 8px; font-size: 12px; }
+.view.md code { font-size: .92em; }
+.view.md img { max-width: 100%; border-radius: 6px; }
+.view.md a { color: var(--dp-accent); text-decoration: none; }
+.view.md blockquote { margin: 0; padding-left: 12px; border-left: 3px solid var(--dp-line); color: var(--dp-muted); }
+.view.img { padding: 16px; }
+.view.img img { max-width: calc(100% * var(--dp-zoom, 1)); border-radius: 8px; }
+.view.pdf { padding: 12px 12px 40px; }
+.page { position: relative; margin: 0 auto 10px; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.18); background: #fff; overflow: hidden; }
+.page canvas { display: block; }
+.textLayer { position: absolute; inset: 0; overflow: hidden; line-height: 1; transform-origin: 0 0; }
+.textLayer span { position: absolute; color: transparent; white-space: pre; transform-origin: 0 0; cursor: text; }
+.textLayer ::selection { background: rgba(30, 100, 255, .3); }
+.textLayer .endOfContent { display: block; position: absolute; inset: 100% 0 0; z-index: -1; cursor: default; user-select: none; }
+.textLayer .endOfContent.active { top: 0; }
+.view .CodeMirror { height: 100%; font-size: calc(12.5px * var(--dp-zoom, 1)); background: var(--dp-bg); color: var(--dp-fg); }
+.view .CodeMirror-gutters { background: var(--dp-bg); border-color: var(--dp-line); }
+.view .CodeMirror-linenumber { color: var(--dp-muted); }
+
+/* Live 编辑态：源码可编辑但显示得接近渲染效果。记号（cm-formatting）只在光标所在行（外层带 active）显示；列表记号和任务框一直显示。
+   正文用和阅读态一样的字体字号、居中、限宽；代码片段等宽带底色；表格行（脚本加 md-table）等宽；图片由脚本挂在行下方（md-img） */
+.view.live .CodeMirror { font-family: inherit; font-size: calc(14px * var(--dp-zoom, 1)); line-height: 1.75; }
+.view.live .CodeMirror-lines { max-width: 48em; margin: 0 auto; padding: 16px 20px 40px; }
+body.wide .view.live .CodeMirror-lines { max-width: 62em; padding: 28px 48px 48px; }
+.view.live .CodeMirror-cursor { border-left-width: 2px; }
+.view.live .cm-formatting, .view.live .cm-url, .view.live .cm-image-marker { display: none; }
+.view.live .active .cm-formatting, .view.live .active .cm-url, .view.live .active .cm-image-marker, .view.live .cm-formatting-list, .view.live .cm-formatting-task { display: inline; }
+.view.live .cm-header, .view.live .cm-variable-2, .view.live .cm-variable-3, .view.live .cm-keyword, .view.live .cm-comment, .view.live .cm-link, .view.live .cm-url, .view.live .cm-quote, .view.live .cm-hr, .view.live .cm-image-alt-text { color: inherit; }
+.view.live .cm-header { font-weight: 600; }
+.view.live .cm-header-1 { font-size: 1.5em; } .view.live .cm-header-2 { font-size: 1.25em; } .view.live .cm-header-3 { font-size: 1.1em; }
+.view.live .cm-strong { font-weight: 600; } .view.live .cm-em { font-style: italic; } .view.live .cm-strikethrough { text-decoration: line-through; }
+.view.live .cm-quote { color: var(--dp-muted); }
+.view.live .cm-link { color: var(--dp-accent); text-decoration: none; }
+.view.live .cm-formatting-list, .view.live .cm-hr, .view.live .cm-image-alt-text, .view.live .active .cm-formatting, .view.live .active .cm-url { color: var(--dp-muted); }
+.view.live .cm-comment { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .92em; background: var(--dp-hover); border-radius: 4px; padding: 0 3px; }
+.view.live .md-table { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .9em; }
+.view.live .md-img { display: block; max-width: 100%; max-height: 60vh; border-radius: 6px; margin: 6px 0 10px; }
+
+/* 编号标记 */
+sup.mark { display: inline-block; min-width: 14px; height: 14px; padding: 0 3px; margin: 0 2px; border-radius: 7px; background: var(--dp-accent); color: var(--dp-accent-fg); font-size: 9px; line-height: 14px; text-align: center; vertical-align: super; user-select: none; cursor: pointer; }
+.textLayer sup.mark { color: #fff; }
+
+/* 提示条：浮在显示区上方居中 */
+#toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 20; display: none; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 6px 12px; border-radius: 10px; font-size: 12px; background: var(--dp-cardbg); border: 1px solid var(--dp-line); box-shadow: var(--dp-shadow); }
+#toast.show { display: flex; }
+#toast.error { color: var(--error, #c0392b); }
+#toast button { height: 22px; padding: 0 10px; border-radius: 11px; font-size: 12px; border: 1px solid var(--dp-line); }
+#toast button.ok { background: var(--dp-accent); color: var(--dp-accent-fg); border-color: transparent; }
+#toast button:hover { filter: brightness(1.05); }
+
+/* 顶栏图标钮的小气泡：半透明的小圆角块，鼠标移到图标上时出现在图标的右下方，写着这个钮的名字；不接鼠标事件，所以不会挡住点击 */
+#tip { position: fixed; z-index: 40; display: none; padding: 2px 7px; border-radius: 6px; font-size: 11px; line-height: 16px; white-space: nowrap; pointer-events: none; background: color-mix(in srgb, var(--foreground, #333) 78%, transparent); color: var(--dp-bg); }
+
+/* 评论钮下的小清单：只列编号、文件名和位置，用来跳到那条标记 */
+#menu { position: fixed; z-index: 25; display: none; width: 250px; max-height: 50%; overflow: auto; padding: 6px; }
+#menu.show { display: block; }
+#menu .row { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+#menu .row:hover { background: var(--dp-hover); }
+#menu .n, #noteBox .n { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--dp-accent); color: var(--dp-accent-fg); font-size: 10px; flex: none; }
+#menu .f { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#menu .w { color: var(--dp-muted); font-size: 11px; flex: none; }
+#menu .foot { display: flex; gap: 2px; justify-content: flex-end; padding: 6px 2px 2px; margin-top: 4px; border-top: 1px solid var(--dp-line); }
+#menu .foot button { font-size: 11px; color: var(--dp-muted); padding: 3px 8px; border-radius: 6px; }
+#menu .foot button:hover { background: var(--dp-hover); color: var(--dp-fg); }
+#menu .foot button.danger { color: var(--error, #c0392b); }
+#menu .empty { padding: 10px 8px; color: var(--dp-muted); font-size: 12px; text-align: center; }
+#menu .kept { padding: 6px 8px 2px; color: var(--dp-muted); font-size: 11px; }   /* 已随消息发出去、只留给代理查阅的评论还存着多少条 */
+
+/* 点编号标记弹出的详情卡：文件和位置、引文、可改的评论、删除和保存 */
+#noteBox { position: fixed; z-index: 31; display: none; width: 300px; padding: 10px; }
+#noteBox.show { display: block; }
+#noteBox .where { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--dp-muted); margin-bottom: 8px; }
+#noteBox .where .f { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#noteBox .q { font-size: 12px; max-height: 80px; overflow: auto; margin-bottom: 8px; padding: 6px 10px; border-radius: 8px; background: var(--dp-hover); white-space: pre-wrap; }
+#noteBox textarea { width: 100%; box-sizing: border-box; height: 64px; font: inherit; font-size: 12px; line-height: 1.5; border: 1px solid var(--dp-line); border-radius: 8px; padding: 6px 8px; background: var(--dp-bg); color: inherit; resize: none; outline: none; }
+#noteBox textarea:focus { box-shadow: 0 0 0 2px var(--dp-tint); border-color: var(--dp-accent); }
+#noteBox .btns { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+#noteBox .btns .sp { flex: 1; }
+.pill.danger { color: var(--error, #c0392b); }
+
+/* 选区旁的小胶囊和评论弹窗 */
+#popBtn { position: fixed; z-index: 30; display: none; box-shadow: var(--dp-shadow); }
+#popBtn:hover { background: var(--dp-cardbg); }
+#pop { position: fixed; z-index: 31; display: none; width: 300px; padding: 10px; }
+#pop .quote { font-size: 12px; color: var(--dp-muted); max-height: 64px; overflow: auto; margin-bottom: 8px; padding: 6px 10px; border-radius: 8px; background: var(--dp-hover); white-space: pre-wrap; }
+#pop textarea { width: 100%; box-sizing: border-box; height: 72px; font: inherit; font-size: 12px; line-height: 1.5; border: 1px solid var(--dp-line); border-radius: 8px; padding: 6px 8px; background: var(--dp-bg); color: inherit; resize: none; outline: none; }
+#pop textarea:focus { box-shadow: 0 0 0 2px var(--dp-tint); border-color: var(--dp-accent); }
+#pop .btns { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
+
+/* 对话记录卡：只在 native 态（原装输入框已浮到面板底部）由顶栏的对话图标展开，浮在输入框上方，宽度和输入框一致 */
+#chat { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--dp-native-h, 82px) + 24px); z-index: 28; width: min(900px, calc(100% - 48px)); max-height: 55vh; display: none; flex-direction: column; background: color-mix(in srgb, var(--dp-cardbg) 94%, transparent); backdrop-filter: blur(10px); border: 1px solid var(--dp-line); border-radius: 14px; box-shadow: var(--dp-shadow); }
+body.native #chat.open { display: flex; }
+#chatLog { overflow: auto; padding: 10px 14px; }
+#chatLog .msg { margin: 6px 0; font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+#chatLog .msg.user { margin-left: 18%; padding: 6px 10px; border-radius: 12px 12px 4px 12px; background: var(--dp-tint); }
+#chatLog .msg.agent { margin-right: 8%; }
+#chatLog .hint { padding: 6px 0; color: var(--dp-muted); font-size: 12px; }
+
+/* 对话图标：窗格最大化（max 态）才出现；点过一下（输入框已浮起）高亮，点过两下（记录卡展开）再加底色。native 态显示区底部按后端回报的输入框高度留白（--dp-native-h） */
+#chatBtn { display: none; }
+body.max #chatBtn { display: inline-flex; }
+#chatBtn.log { background: var(--dp-tint); color: var(--dp-accent); }
+/* 浮起的输入框只是盖在正文上，显示区不再为它预留底部空白；想看被挡住的末尾几行，点顶栏图标把输入框收起即可 */
+
+/* HTML 预览：内嵌框架铺满显示区 */
+.view.html { padding: 0; overflow: hidden; }
+.htmlFrame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+#noteBox .loc { font-size: 11px; color: var(--dp-muted); margin-bottom: 6px; word-break: break-all; }
+
+/* 目录树文件行尾的两个小钮（复制路径、@ 引用）：悬停才出现 */
+.node .nm { flex: 1; }
+.node .rowbtn { width: 18px; height: 20px; margin-left: 0; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--dp-muted); opacity: 0; flex: none; }
+.node .rowbtn + .rowbtn { margin-left: -7px; }   /* 复制钮和 @ 钮贴紧：两个钮的点击区略有重叠，各自仍有 11 像素独占 */
+.node .rowbtn svg { width: 12px; height: 12px; }
+.node:hover .rowbtn { opacity: 1; }
+.node .rowbtn:hover { color: var(--dp-accent); background: var(--dp-tint); }
+.node.file.on .rowbtn { color: inherit; opacity: 1; }
+.node.hit .rowbtn { align-self: flex-start; }
+
+/* 详情卡里的删除钮：垃圾桶图标；点过一次后变成红底胶囊要求再点一次确认 */
+#noteBox .icon.danger { color: var(--error, #c0392b); }
+#noteBox .icon.danger:hover { background: color-mix(in srgb, var(--error, #c0392b) 12%, transparent); }
+#noteBox .pill.armed { background: var(--error, #c0392b); color: #fff; border-color: transparent; }
+#noteBox .pill.armed svg { width: 13px; height: 13px; }

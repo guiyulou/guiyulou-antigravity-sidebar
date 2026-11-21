@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>侧边栏</title>
+<link rel="stylesheet" href="/vendor/codemirror.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<!-- 顶栏：收放目录；选项卡条是所有打开文件的一条总清单，不分栏，可拖动；右侧是放大缩小、阅读/编辑开关（按当前文件类型显示）、保存、刷新（把当前文件按磁盘上的最新内容重新装入，有文件打开时才出现）、分屏开关、对话记录（只在面板最大化后出现）、评论 -->
+<header id="bar">
+  <button id="treeBtn" class="icon on" data-tip="Files" aria-label="Show or hide the file tree"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M6 2.5v11"/></svg></button>
+  <div id="tabs"></div>
+  <div id="actions">
+    <div id="zoom" class="seg" title="Zoom"><button id="zoomOut" title="Zoom out">−</button><button id="zoomReset" title="Reset to 100%">100%</button><button id="zoomIn" title="Zoom in">+</button></div>
+    <div id="modeSeg" class="seg" style="display:none"><button data-mode="read" class="on">Read</button><button data-mode="live" title="Edit the source with headings, emphasis and images shown; markers appear only on the cursor line">Live</button><button data-mode="source">Source</button></div>
+    <button id="saveBtn" class="pill primary" style="display:none">Save</button>
+    <button id="reloadBtn" class="icon" style="display:none" data-tip="Refresh" aria-label="Reload this file from disk and stay at the same place"><svg viewBox="0 0 16 16"><path d="M14.6 3.2v3.6H11"/><path d="M13.1 9.8a5.4 5.4 0 1 1-1.27-5.62L14.6 6.8"/></svg></button>
+    <button id="splitBtn" class="icon" data-tip="Split" aria-label="Split view: show two files side by side (or drag a tab to the right half)"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M8 2.5v11"/></svg></button>
+    <button id="chatBtn" class="icon" data-tip="Chat" aria-label="Chat: 1st click shows the input box, 2nd the conversation, 3rd hides both"><svg viewBox="0 0 16 16"><path d="M2.5 3.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H7l-3.5 3v-3h-1a2 2 0 0 1-2-2v-5z"/><path d="M5 5.5h6M5 8h4"/></svg></button>
+    <button id="notesBtn" class="icon" data-tip="Notes" aria-label="Notes"><svg viewBox="0 0 16 16"><path d="M2.5 3.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H7l-3.5 3v-3h-1a2 2 0 0 1-2-2v-5z"/></svg><span id="badge" class="badge">0</span></button>
+  </div>
+</header>
+<div id="main">
+  <!-- 左栏：搜索框在上，目录树在下 -->
+  <aside id="side">
+    <div id="searchbox"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg><input id="search" placeholder="Search files"><button id="searchClear" class="icon small" title="Clear">×</button></div>
+    <div id="tree"></div>
+  </aside>
+  <div id="resizer" title="Drag to resize the file tree"></div>
+  <!-- 左右两栏：各有选项卡条和显示区；右栏只在分屏时显示，中间是拖动条；paneScroll 是分屏时显示区最右侧唯一的一条竖向滚动条，里面的 div 是滑块 -->
+  <div id="panes">
+    <div id="paneA" class="pane focus"><div class="views"><div class="view on placeholder"><div class="hint">Pick a file in the tree on the left, or search by name.</div></div></div></div>
+    <div id="paneDivider" title="Drag to resize the two panes"></div>
+    <div id="dropHint"></div>
+    <div id="paneScroll"><div></div></div>
+    <div id="paneB" class="pane"><div class="views"><div class="view on placeholder"><div class="hint">Pick a file to show it here.</div></div></div></div>
+  </div>
+  <!-- 浮在显示区上方的提示条：报错、确认、反馈 -->
+  <div id="toast"></div>
+</div>
+<!-- 评论钮下的小清单（只列编号和文件，用来跳转）和点编号标记弹出的详情卡 -->
+<div id="menu" class="card"></div>
+<!-- 对话记录卡：面板最大化、原装输入框浮起后，顶栏的对话图标展开它，浮在输入框上方 -->
+<section id="chat"><div id="chatLog"></div></section>
+<div id="noteBox" class="card"></div>
+<!-- 顶栏图标钮的小气泡：鼠标移到带 data-tip 的图标钮上时，出现在图标的右下方，写着这个钮的名字 -->
+<div id="tip"></div>
+<!-- 选区旁的小胶囊和评论弹窗 -->
+<button id="popBtn" class="pill"><svg viewBox="0 0 16 16"><path d="M2.5 3.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H7l-3.5 3v-3h-1a2 2 0 0 1-2-2v-5z"/></svg>Comment</button>
+<div id="pop" class="card">
+  <div class="quote"></div>
+  <textarea placeholder="Write a comment, Cmd+Enter to add"></textarea>
+  <div class="btns"><button id="popCancel" class="pill ghost">Cancel</button><button id="popOk" class="pill primary">Add to chat</button></div>
+</div>
+<script src="/vendor/markdown-it.min.js"></script>
+<script src="/vendor/pdf.min.js"></script>
+<script src="/vendor/codemirror.js"></script>
+<script src="/vendor/xml.js"></script>
+<script src="/vendor/markdown.js"></script>
+<script src="/vendor/python.js"></script>
+<script src="/vendor/stex.js"></script>
+<script src="/vendor/r.js"></script>
+<script src="/vendor/julia.js"></script>
+<script src="/vendor/shell.js"></script>
+<script src="/vendor/javascript.js"></script>
+<script src="/vendor/gams.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

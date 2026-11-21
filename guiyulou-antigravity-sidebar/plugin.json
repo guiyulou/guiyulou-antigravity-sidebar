@@ -1,0 +1,7 @@
+{
+  "name": "guiyulou-antigravity-sidebar",
+  "displayName": "侧边栏",
+  "author": "西塞山的鳜鱼篓",
+  "description": "Browse and search workspace files (copy a path or @-mention a file or folder from the tree), open files in tabs (up to eight, each keeps its scroll position, cursor and unsaved edits) and drag a tab or a file to the right half to see two files side by side, read PDF and Markdown, preview HTML, edit code and text (Markdown has a Live mode that shows headings, emphasis and images while you edit the source), select text in a document or in the conversation to comment with numbered marks, add references to the chat; when the panel is maximized, a header button floats the app's own chat input box to the bottom of the panel (first click), shows the conversation (second click) and hides both (third click).",
+  "version": "1.0"
+}
